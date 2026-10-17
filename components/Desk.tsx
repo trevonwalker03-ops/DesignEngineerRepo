@@ -3,7 +3,16 @@
 import { useRef, useState } from "react";
 import { AddProjectDialog } from "@/components/AddProjectDialog";
 import { Board } from "@/components/Board";
-import { nextProjectId, filterProjects, type Project, type Stage } from "@/lib/projects";
+import { Toasts, type ToastItem } from "@/components/Toasts";
+import {
+  nextProjectId,
+  filterProjects,
+  removeProject,
+  restoreProject,
+  type Project,
+  type RemovedProject,
+  type Stage,
+} from "@/lib/projects";
 
 export function Desk({
   projects,
@@ -17,8 +26,36 @@ export function Desk({
   const [jobs, setJobs] = useState(projects);
   const [query, setQuery] = useState("");
   const [adding, setAdding] = useState(false);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
   const addButtonRef = useRef<HTMLButtonElement>(null);
+  const jobsRef = useRef(jobs);
+  const toastId = useRef(0);
+  jobsRef.current = jobs;
   const visible = filterProjects(jobs, query);
+
+  function pushToast(
+    toast:
+      | { kind: "created"; name: string }
+      | { kind: "deleted"; name: string; removed: RemovedProject },
+  ) {
+    toastId.current += 1;
+    const id = toastId.current;
+    const next: ToastItem =
+      toast.kind === "created"
+        ? { id, kind: "created", name: toast.name }
+        : { id, kind: "deleted", name: toast.name, removed: toast.removed };
+    setToasts((current) => [...current, next]);
+  }
+
+  function dismissToast(id: number) {
+    setToasts((current) => current.filter((toast) => toast.id !== id));
+  }
+
+  function undoDelete(removed: RemovedProject) {
+    const next = restoreProject(jobsRef.current, removed);
+    jobsRef.current = next;
+    setJobs(next);
+  }
 
   function closeDialog() {
     setAdding(false);
@@ -32,8 +69,25 @@ export function Desk({
     due: string;
     stage: Stage;
   }) {
-    setJobs((current) => [...current, { ...project, id: nextProjectId(current) }]);
+    setJobs((current) => {
+      const next = [...current, { ...project, id: nextProjectId(current) }];
+      jobsRef.current = next;
+      return next;
+    });
     setAdding(false);
+    pushToast({ kind: "created", name: project.name });
+  }
+
+  function deleteProject(id: string) {
+    const result = removeProject(jobsRef.current, id);
+    if (!result.removed) return;
+    jobsRef.current = result.list;
+    setJobs(result.list);
+    pushToast({
+      kind: "deleted",
+      name: result.removed.project.name,
+      removed: result.removed,
+    });
   }
 
   return (
@@ -92,8 +146,9 @@ export function Desk({
         <p className="search-empty">No projects match “{query.trim()}”.</p>
       ) : null}
       <main>
-        <Board jobs={visible} setJobs={setJobs} />
+        <Board jobs={visible} setJobs={setJobs} onDeleteProject={deleteProject} />
       </main>
+      <Toasts toasts={toasts} onDismiss={dismissToast} onUndo={undoDelete} />
       {adding ? (
         <AddProjectDialog onClose={closeDialog} onSubmit={addProject} />
       ) : null}

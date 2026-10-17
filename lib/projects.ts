@@ -84,6 +84,53 @@ export function projectsInStage(stage: Stage, list: Project[]) {
   return list.filter((project) => project.stage === stage);
 }
 
+export type RemovedProject = {
+  project: Project;
+  index: number;
+  previousInStageId: string | null;
+  nextInStageId: string | null;
+};
+
+export function removeProject(list: Project[], id: string) {
+  const index = list.findIndex((project) => project.id === id);
+  if (index === -1) return { list, removed: null as RemovedProject | null };
+  const project = list[index];
+  const mates = list.filter((item) => item.stage === project.stage);
+  const mateIndex = mates.findIndex((item) => item.id === id);
+  const removed: RemovedProject = {
+    project,
+    index,
+    previousInStageId: mates[mateIndex - 1]?.id ?? null,
+    nextInStageId: mates[mateIndex + 1]?.id ?? null,
+  };
+  return {
+    list: list.filter((item) => item.id !== id),
+    removed,
+  };
+}
+
+export function restoreProject(list: Project[], removed: RemovedProject) {
+  if (list.some((project) => project.id === removed.project.id)) return list;
+  const nextIndex = list.findIndex(
+    (project) =>
+      project.id === removed.nextInStageId && project.stage === removed.project.stage,
+  );
+  let insertAt = Math.min(removed.index, list.length);
+  if (nextIndex !== -1) {
+    insertAt = nextIndex;
+  } else {
+    const previousIndex = list.findIndex(
+      (project) =>
+        project.id === removed.previousInStageId &&
+        project.stage === removed.project.stage,
+    );
+    if (previousIndex !== -1) insertAt = previousIndex + 1;
+  }
+  const next = list.slice();
+  next.splice(insertAt, 0, removed.project);
+  return next;
+}
+
 export function nextProjectId(list: Project[]) {
   const used = new Set(list.map((project) => project.id));
   let highest = 0;

@@ -18,9 +18,11 @@ function stageSlug(stage: Stage) {
 export function Board({
   jobs,
   setJobs,
+  onDeleteProject,
 }: {
   jobs: Project[];
   setJobs: Dispatch<SetStateAction<Project[]>>;
+  onDeleteProject: (id: string) => void;
 }) {
   const [overStage, setOverStage] = useState<Stage | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -58,7 +60,7 @@ export function Board({
   }
 
   function deleteProject(id: string) {
-    setJobs((current) => current.filter((job) => job.id !== id));
+    onDeleteProject(id);
     setSelectedId((current) => (current === id ? null : current));
   }
 
