@@ -1,0 +1,243 @@
+:root {
+  --paper: #efe6d6;
+  --paper-deep: #e4d9c6;
+  --card: #f7f1e6;
+  --ink: #1e1a16;
+  --muted: #6e655c;
+  --line: #d4c8b4;
+  --brief: #8a5a2a;
+  --progress: #1f4d3a;
+  --review: #6e3144;
+  --shipped: #3d4c5c;
+  --font-sans: "IBM Plex Sans", sans-serif;
+  --font-display: "Newsreader", serif;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  color: var(--ink);
+  background:
+    linear-gradient(180deg, rgba(255, 252, 246, 0.45), transparent 220px),
+    var(--paper);
+  font-family: var(--font-sans), sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+.desk {
+  width: min(1120px, calc(100% - 2.5rem));
+  margin: 0 auto;
+  padding: 1.75rem 0 3rem;
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.studio {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.brand h1 {
+  margin-top: 0.15rem;
+  font-family: var(--font-display), serif;
+  font-size: 2.75rem;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.today {
+  color: var(--muted);
+  font-size: 0.95rem;
+  padding-bottom: 0.35rem;
+}
+
+.counts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0 1.5rem;
+  list-style: none;
+}
+
+.counts li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  padding-top: 0.45rem;
+  border-top: 2px solid var(--line);
+}
+
+.counts li[data-stage="brief"] {
+  border-top-color: var(--brief);
+}
+
+.counts li[data-stage="in-progress"] {
+  border-top-color: var(--progress);
+}
+
+.counts li[data-stage="review"] {
+  border-top-color: var(--review);
+}
+
+.counts li[data-stage="shipped"] {
+  border-top-color: var(--shipped);
+}
+
+.count-value {
+  font-family: var(--font-display), serif;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.count-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.column {
+  min-height: 12rem;
+  padding: 0.85rem;
+  background: rgba(255, 250, 242, 0.45);
+  border: 1px solid var(--line);
+}
+
+.column-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.column-head h2 {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.column[data-stage="brief"] .column-head h2 {
+  color: var(--brief);
+}
+
+.column[data-stage="in-progress"] .column-head h2 {
+  color: var(--progress);
+}
+
+.column[data-stage="review"] .column-head h2 {
+  color: var(--review);
+}
+
+.column[data-stage="shipped"] .column-head h2 {
+  color: var(--shipped);
+}
+
+.column-count {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  list-style: none;
+}
+
+.card {
+  padding: 0.8rem 0.85rem 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+
+.card h3 {
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.client {
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--paper-deep);
+  color: var(--ink);
+  font-size: 0.8rem;
+}
+
+.meta time {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 800px) {
+  .desk {
+    width: min(1120px, calc(100% - 1.5rem));
+    padding-top: 1.25rem;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .brand h1 {
+    font-size: 2.35rem;
+  }
+
+  .today {
+    padding-bottom: 0;
+  }
+
+  .counts,
+  .board {
+    grid-template-columns: 1fr;
+  }
+
+  .counts li {
+    align-items: center;
+  }
+}
