@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { ProjectSheet } from "@/components/ProjectSheet";
 import {
   formatDue,
   projectsInStage,
@@ -16,6 +17,10 @@ function stageSlug(stage: Stage) {
 export function Board({ projects }: { projects: Project[] }) {
   const [jobs, setJobs] = useState(projects);
   const [overStage, setOverStage] = useState<Stage | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const dragged = useRef(false);
+  const selected = jobs.find((job) => job.id === selectedId) ?? null;
+  const closeSheet = useCallback(() => setSelectedId(null), []);
 
   function moveProject(id: string, stage: Stage) {
     setJobs((current) =>
@@ -24,8 +29,17 @@ export function Board({ projects }: { projects: Project[] }) {
   }
 
   function onDragStart(event: React.DragEvent<HTMLElement>, id: string) {
+    dragged.current = true;
     event.dataTransfer.setData("text/plain", id);
     event.dataTransfer.effectAllowed = "move";
+  }
+
+  function openProject(id: string) {
+    if (dragged.current) {
+      dragged.current = false;
+      return;
+    }
+    setSelectedId(id);
   }
 
   function onDragOver(event: React.DragEvent<HTMLElement>, stage: Stage) {
@@ -87,7 +101,16 @@ export function Board({ projects }: { projects: Project[] }) {
                       <article
                         className="card"
                         draggable
+                        role="button"
+                        tabIndex={0}
                         onDragStart={(event) => onDragStart(event, job.id)}
+                        onClick={() => openProject(job.id)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            setSelectedId(job.id);
+                          }
+                        }}
                       >
                         <h3>{job.name}</h3>
                         <p className="client">{job.client}</p>
@@ -104,6 +127,9 @@ export function Board({ projects }: { projects: Project[] }) {
           );
         })}
       </div>
+      {selected ? (
+        <ProjectSheet project={selected} onClose={closeSheet} />
+      ) : null}
     </>
   );
 }
