@@ -98,6 +98,23 @@ body {
   background: #3a332c;
 }
 
+.modal-delete {
+  padding: 0.45rem 0.8rem;
+  border: none;
+  background: var(--delete);
+  color: var(--card);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.delete-copy {
+  margin-top: 0.75rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
 .add-project:focus-visible,
 .modal-submit:focus-visible,
 .modal-cancel:focus-visible {

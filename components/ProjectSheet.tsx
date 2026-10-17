@@ -132,15 +132,15 @@ export function ProjectSheet({
                 </div>
               </dl>
               <footer className="sheet-actions">
-                <button type="button" className="sheet-edit" onClick={() => setMode("edit")}>
-                  Edit
-                </button>
                 <button
                   type="button"
                   className="sheet-delete"
                   onClick={() => onDelete(project.id)}
                 >
                   Delete
+                </button>
+                <button type="button" className="sheet-edit" onClick={() => setMode("edit")}>
+                  Edit
                 </button>
               </footer>
             </>
