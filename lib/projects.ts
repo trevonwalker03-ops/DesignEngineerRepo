@@ -70,7 +70,17 @@ export const projects: Project[] = [
   },
 ];
 
-export function projectsInStage(stage: Stage, list: Project[] = projects) {
+export function filterProjects(list: Project[], query: string) {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return list;
+  return list.filter((project) =>
+    [project.name, project.client, project.owner].some((value) =>
+      value.toLowerCase().includes(needle),
+    ),
+  );
+}
+
+export function projectsInStage(stage: Stage, list: Project[]) {
   return list.filter((project) => project.stage === stage);
 }
 
