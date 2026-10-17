@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { ProjectSheet } from "@/components/ProjectSheet";
 import {
   formatDue,
@@ -14,8 +14,13 @@ function stageSlug(stage: Stage) {
   return stage.toLowerCase().replace(/\s+/g, "-");
 }
 
-export function Board({ projects }: { projects: Project[] }) {
-  const [jobs, setJobs] = useState(projects);
+export function Board({
+  jobs,
+  setJobs,
+}: {
+  jobs: Project[];
+  setJobs: Dispatch<SetStateAction<Project[]>>;
+}) {
   const [overStage, setOverStage] = useState<Stage | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const dragged = useRef(false);

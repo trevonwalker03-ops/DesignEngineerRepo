@@ -74,6 +74,21 @@ export function projectsInStage(stage: Stage, list: Project[] = projects) {
   return list.filter((project) => project.stage === stage);
 }
 
+export function nextProjectId(list: Project[]) {
+  const used = new Set(list.map((project) => project.id));
+  let highest = 0;
+  for (const project of list) {
+    const match = /^nl-(\d+)$/.exec(project.id);
+    if (match) highest = Math.max(highest, Number(match[1]));
+  }
+  let id = `nl-${highest + 1}`;
+  while (used.has(id)) {
+    highest += 1;
+    id = `nl-${highest + 1}`;
+  }
+  return id;
+}
+
 export function formatDue(isoDate: string) {
   const [year, month, day] = isoDate.split("-").map(Number);
   return new Intl.DateTimeFormat("en-US", {
