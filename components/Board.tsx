@@ -51,6 +51,11 @@ export function Board({
     setSelectedId(id);
   }
 
+  function deleteProject(id: string) {
+    setJobs((current) => current.filter((job) => job.id !== id));
+    setSelectedId((current) => (current === id ? null : current));
+  }
+
   function saveProject(project: Project) {
     setJobs((current) =>
       current.map((job) => (job.id === project.id ? project : job)),
@@ -126,22 +131,41 @@ export function Board({
                           }
                         }}
                       >
-                        <button
-                          type="button"
-                          className="card-edit"
-                          aria-label={`Edit ${job.name}`}
-                          onMouseDown={(event) => event.stopPropagation()}
-                          onDragStart={(event) => event.stopPropagation()}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            openProject(job.id, "edit");
-                          }}
-                        >
-                          <svg viewBox="0 0 16 16" aria-hidden="true">
-                            <path d="M11.2 1.8a1.2 1.2 0 0 1 1.7 0l1.3 1.3a1.2 1.2 0 0 1 0 1.7L6.4 12.6 3 13.4l.8-3.4 7.4-8.2Z" />
-                            <path d="M2 14.2h12" />
-                          </svg>
-                        </button>
+                        <div className="card-actions">
+                          <button
+                            type="button"
+                            className="card-edit"
+                            aria-label={`Edit ${job.name}`}
+                            onMouseDown={(event) => event.stopPropagation()}
+                            onDragStart={(event) => event.stopPropagation()}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openProject(job.id, "edit");
+                            }}
+                          >
+                            <svg viewBox="0 0 16 16" aria-hidden="true">
+                              <path d="M11.2 1.8a1.2 1.2 0 0 1 1.7 0l1.3 1.3a1.2 1.2 0 0 1 0 1.7L6.4 12.6 3 13.4l.8-3.4 7.4-8.2Z" />
+                              <path d="M2 14.2h12" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="card-delete"
+                            aria-label={`Delete ${job.name}`}
+                            onMouseDown={(event) => event.stopPropagation()}
+                            onDragStart={(event) => event.stopPropagation()}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              deleteProject(job.id);
+                            }}
+                          >
+                            <svg viewBox="0 0 16 16" aria-hidden="true">
+                              <path d="M3.2 4.5h9.6" />
+                              <path d="M6.2 4.4V3.2h3.6v1.2" />
+                              <path d="M4.4 4.5l.6 8.3h6l.6-8.3" />
+                            </svg>
+                          </button>
+                        </div>
                         <h3>{job.name}</h3>
                         <p className="client">{job.client}</p>
                         <p className="meta">
@@ -165,6 +189,7 @@ export function Board({
           openRequest={sheetRequest}
           onClose={closeSheet}
           onSave={saveProject}
+          onDelete={deleteProject}
         />
       ) : null}
     </>
