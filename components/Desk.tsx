@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { AddProjectDialog } from "@/components/AddProjectDialog";
 import { Board } from "@/components/Board";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Toasts, type ToastItem } from "@/components/Toasts";
 import {
   nextProjectId,
@@ -109,6 +110,7 @@ export function Desk({
           <p className="today">
             <time dateTime={todayIso}>{today}</time>
           </p>
+          <ThemeToggle />
         </div>
       </header>
       <div
