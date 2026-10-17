@@ -1,4 +1,4 @@
-import { Board } from "@/components/Board";
+import { Desk } from "@/components/Desk";
 import { projects } from "@/lib/projects";
 
 export default function Home() {
@@ -14,20 +14,5 @@ export default function Home() {
     String(now.getDate()).padStart(2, "0"),
   ].join("-");
 
-  return (
-    <div className="desk">
-      <header className="topbar">
-        <div className="brand">
-          <p className="studio">Field office</p>
-          <h1>Northline</h1>
-        </div>
-        <p className="today">
-          <time dateTime={todayIso}>{today}</time>
-        </p>
-      </header>
-      <main>
-        <Board projects={projects} />
-      </main>
-    </div>
-  );
+  return <Desk projects={projects} today={today} todayIso={todayIso} />;
 }

@@ -70,8 +70,80 @@ export const projects: Project[] = [
   },
 ];
 
-export function projectsInStage(stage: Stage, list: Project[] = projects) {
+export function filterProjects(list: Project[], query: string) {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return list;
+  return list.filter((project) =>
+    [project.name, project.client, project.owner].some((value) =>
+      value.toLowerCase().includes(needle),
+    ),
+  );
+}
+
+export function projectsInStage(stage: Stage, list: Project[]) {
   return list.filter((project) => project.stage === stage);
+}
+
+export type RemovedProject = {
+  project: Project;
+  index: number;
+  previousInStageId: string | null;
+  nextInStageId: string | null;
+};
+
+export function removeProject(list: Project[], id: string) {
+  const index = list.findIndex((project) => project.id === id);
+  if (index === -1) return { list, removed: null as RemovedProject | null };
+  const project = list[index];
+  const mates = list.filter((item) => item.stage === project.stage);
+  const mateIndex = mates.findIndex((item) => item.id === id);
+  const removed: RemovedProject = {
+    project,
+    index,
+    previousInStageId: mates[mateIndex - 1]?.id ?? null,
+    nextInStageId: mates[mateIndex + 1]?.id ?? null,
+  };
+  return {
+    list: list.filter((item) => item.id !== id),
+    removed,
+  };
+}
+
+export function restoreProject(list: Project[], removed: RemovedProject) {
+  if (list.some((project) => project.id === removed.project.id)) return list;
+  const nextIndex = list.findIndex(
+    (project) =>
+      project.id === removed.nextInStageId && project.stage === removed.project.stage,
+  );
+  let insertAt = Math.min(removed.index, list.length);
+  if (nextIndex !== -1) {
+    insertAt = nextIndex;
+  } else {
+    const previousIndex = list.findIndex(
+      (project) =>
+        project.id === removed.previousInStageId &&
+        project.stage === removed.project.stage,
+    );
+    if (previousIndex !== -1) insertAt = previousIndex + 1;
+  }
+  const next = list.slice();
+  next.splice(insertAt, 0, removed.project);
+  return next;
+}
+
+export function nextProjectId(list: Project[]) {
+  const used = new Set(list.map((project) => project.id));
+  let highest = 0;
+  for (const project of list) {
+    const match = /^nl-(\d+)$/.exec(project.id);
+    if (match) highest = Math.max(highest, Number(match[1]));
+  }
+  let id = `nl-${highest + 1}`;
+  while (used.has(id)) {
+    highest += 1;
+    id = `nl-${highest + 1}`;
+  }
+  return id;
 }
 
 export function formatDue(isoDate: string) {

@@ -2,7 +2,7 @@
 
 Production board for Field office, a small studio. The main screen lists client work across Brief, In progress, Review, and Shipped.
 
-Jobs live in `lib/projects.ts`. A later feature is a change to that list and the card in `components/Board.tsx`.
+The search field above the board filters by project name, client, or owner as you type. It reads the current list and does not change it. Creating a project shows a short confirmation. Deleting one can be undone for a few seconds. Jobs live in `lib/projects.ts`.
 
 ## Run
 

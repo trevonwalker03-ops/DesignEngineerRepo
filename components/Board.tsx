@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { DeleteProjectDialog } from "@/components/DeleteProjectDialog";
+import { ProjectSheet } from "@/components/ProjectSheet";
 import {
   formatDue,
   projectsInStage,
@@ -13,9 +15,27 @@ function stageSlug(stage: Stage) {
   return stage.toLowerCase().replace(/\s+/g, "-");
 }
 
-export function Board({ projects }: { projects: Project[] }) {
-  const [jobs, setJobs] = useState(projects);
+export function Board({
+  jobs,
+  setJobs,
+  onDeleteProject,
+}: {
+  jobs: Project[];
+  setJobs: Dispatch<SetStateAction<Project[]>>;
+  onDeleteProject: (id: string) => void;
+}) {
   const [overStage, setOverStage] = useState<Stage | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [sheetMode, setSheetMode] = useState<"view" | "edit">("view");
+  const [sheetRequest, setSheetRequest] = useState(0);
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: string;
+    name: string;
+    restoreSheet: boolean;
+  } | null>(null);
+  const dragged = useRef(false);
+  const selected = jobs.find((job) => job.id === selectedId) ?? null;
+  const closeSheet = useCallback(() => setSelectedId(null), []);
 
   function moveProject(id: string, stage: Stage) {
     setJobs((current) =>
@@ -24,8 +44,50 @@ export function Board({ projects }: { projects: Project[] }) {
   }
 
   function onDragStart(event: React.DragEvent<HTMLElement>, id: string) {
+    dragged.current = true;
     event.dataTransfer.setData("text/plain", id);
     event.dataTransfer.effectAllowed = "move";
+  }
+
+  function openProject(id: string, mode: "view" | "edit" = "view") {
+    if (dragged.current) {
+      dragged.current = false;
+      return;
+    }
+    setSheetMode(mode);
+    setSheetRequest((current) => current + 1);
+    setSelectedId(id);
+  }
+
+  function deleteProject(id: string) {
+    onDeleteProject(id);
+    setSelectedId((current) => (current === id ? null : current));
+  }
+
+  function askDelete(id: string, name: string) {
+    const restoreSheet = selectedId === id;
+    if (restoreSheet) setSelectedId(null);
+    setPendingDelete({ id, name, restoreSheet });
+  }
+
+  function cancelDelete() {
+    if (pendingDelete?.restoreSheet) {
+      setSheetMode("view");
+      setSelectedId(pendingDelete.id);
+    }
+    setPendingDelete(null);
+  }
+
+  function confirmDelete() {
+    if (!pendingDelete) return;
+    deleteProject(pendingDelete.id);
+    setPendingDelete(null);
+  }
+
+  function saveProject(project: Project) {
+    setJobs((current) =>
+      current.map((job) => (job.id === project.id ? project : job)),
+    );
   }
 
   function onDragOver(event: React.DragEvent<HTMLElement>, stage: Stage) {
@@ -87,8 +149,51 @@ export function Board({ projects }: { projects: Project[] }) {
                       <article
                         className="card"
                         draggable
+                        tabIndex={0}
                         onDragStart={(event) => onDragStart(event, job.id)}
+                        onClick={() => openProject(job.id)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            openProject(job.id);
+                          }
+                        }}
                       >
+                        <div className="card-actions">
+                          <button
+                            type="button"
+                            className="card-delete"
+                            aria-label={`Delete ${job.name}`}
+                            onMouseDown={(event) => event.stopPropagation()}
+                            onDragStart={(event) => event.stopPropagation()}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              askDelete(job.id, job.name);
+                            }}
+                          >
+                            <svg viewBox="0 0 16 16" aria-hidden="true">
+                              <path d="M3.2 4.5h9.6" />
+                              <path d="M6.2 4.4V3.2h3.6v1.2" />
+                              <path d="M4.4 4.5l.6 8.3h6l.6-8.3" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="card-edit"
+                            aria-label={`Edit ${job.name}`}
+                            onMouseDown={(event) => event.stopPropagation()}
+                            onDragStart={(event) => event.stopPropagation()}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openProject(job.id, "edit");
+                            }}
+                          >
+                            <svg viewBox="0 0 16 16" aria-hidden="true">
+                              <path d="M11.2 1.8a1.2 1.2 0 0 1 1.7 0l1.3 1.3a1.2 1.2 0 0 1 0 1.7L6.4 12.6 3 13.4l.8-3.4 7.4-8.2Z" />
+                              <path d="M2 14.2h12" />
+                            </svg>
+                          </button>
+                        </div>
                         <h3>{job.name}</h3>
                         <p className="client">{job.client}</p>
                         <p className="meta">
@@ -104,6 +209,24 @@ export function Board({ projects }: { projects: Project[] }) {
           );
         })}
       </div>
+      {selected ? (
+        <ProjectSheet
+          key={selected.id}
+          project={selected}
+          initialMode={sheetMode}
+          openRequest={sheetRequest}
+          onClose={closeSheet}
+          onSave={saveProject}
+          onDelete={() => askDelete(selected.id, selected.name)}
+        />
+      ) : null}
+      {pendingDelete ? (
+        <DeleteProjectDialog
+          name={pendingDelete.name}
+          onCancel={cancelDelete}
+          onConfirm={confirmDelete}
+        />
+      ) : null}
     </>
   );
 }
