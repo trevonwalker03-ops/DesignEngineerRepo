@@ -82,8 +82,8 @@ body {
 .add-project,
 .modal-submit {
   padding: 0.45rem 0.8rem;
-  border: 1px solid var(--ink);
-  background: var(--ink);
+  border: none;
+  background: var(--progress);
   color: var(--card);
   font-family: inherit;
   font-size: 0.82rem;
