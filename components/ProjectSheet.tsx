@@ -1,68 +1,199 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { formatDue, type Project } from "@/lib/projects";
+
+type Mode = "view" | "edit";
 
 export function ProjectSheet({
   project,
+  initialMode,
+  openRequest,
   onClose,
+  onSave,
 }: {
   project: Project;
+  initialMode: Mode;
+  openRequest: number;
   onClose: () => void;
+  onSave: (project: Project) => void;
 }) {
-  const closeRef = useRef<HTMLButtonElement>(null);
+  const [mode, setMode] = useState<Mode>(initialMode);
+  const [closing, setClosing] = useState(false);
+  const [draft, setDraft] = useState({
+    name: project.name,
+    client: project.client,
+    owner: project.owner,
+    due: project.due,
+  });
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    closeRef.current?.focus();
+    setMode(initialMode);
+    setError("");
+  }, [initialMode, openRequest]);
+
+  useEffect(() => {
+    setDraft({
+      name: project.name,
+      client: project.client,
+      owner: project.owner,
+      due: project.due,
+    });
+  }, [project]);
+
+  function requestClose() {
+    setClosing(true);
+  }
+
+  useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") requestClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [project.id, onClose]);
+  }, []);
+
+  function finishClose(event: React.AnimationEvent<HTMLElement>) {
+    if (!closing || event.target !== event.currentTarget) return;
+    if (event.animationName !== "sheet-out") return;
+    onClose();
+  }
+
+  function save() {
+    const name = draft.name.trim();
+    const client = draft.client.trim();
+    const owner = draft.owner.trim();
+    if (!name || !client || !owner || !draft.due) {
+      setError("Add a name, client, owner, and due date.");
+      return;
+    }
+    onSave({ ...project, name, client, owner, due: draft.due });
+    setError("");
+    setMode("view");
+  }
+
+  function cancelEdit() {
+    setDraft({
+      name: project.name,
+      client: project.client,
+      owner: project.owner,
+      due: project.due,
+    });
+    setError("");
+    setMode("view");
+  }
+
+  const motion = closing ? " is-closing" : "";
 
   return (
     <>
       <button
         type="button"
-        className="sheet-backdrop"
+        className={`sheet-backdrop${motion}`}
         aria-label="Close project details"
-        onClick={onClose}
+        onClick={requestClose}
       />
       <aside
-        className="sheet"
+        className={`sheet${motion}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="sheet-title"
+        onAnimationEnd={finishClose}
       >
         <header className="sheet-head">
           <p className="sheet-id">{project.id}</p>
-          <button
-            ref={closeRef}
-            type="button"
-            className="sheet-close"
-            onClick={onClose}
-          >
+          <button type="button" className="sheet-close" onClick={requestClose}>
             Close
           </button>
         </header>
-        <h2 id="sheet-title">{project.name}</h2>
-        <dl className="sheet-details">
-          <div>
-            <dt>Client</dt>
-            <dd>{project.client}</dd>
-          </div>
-          <div>
-            <dt>Owner</dt>
-            <dd>{project.owner}</dd>
-          </div>
-          <div>
-            <dt>Due</dt>
-            <dd>
-              <time dateTime={project.due}>{formatDue(project.due)}</time>
-            </dd>
-          </div>
-        </dl>
+        <div key={mode} className="sheet-panel">
+          {mode === "view" ? (
+            <>
+              <div className="sheet-title-row">
+                <h2 id="sheet-title">{project.name}</h2>
+                <button type="button" className="sheet-edit" onClick={() => setMode("edit")}>
+                  Edit
+                </button>
+              </div>
+              <dl className="sheet-details">
+                <div>
+                  <dt>Client</dt>
+                  <dd>{project.client}</dd>
+                </div>
+                <div>
+                  <dt>Owner</dt>
+                  <dd>{project.owner}</dd>
+                </div>
+                <div>
+                  <dt>Due</dt>
+                  <dd>
+                    <time dateTime={project.due}>{formatDue(project.due)}</time>
+                  </dd>
+                </div>
+              </dl>
+            </>
+          ) : (
+            <form
+              className="sheet-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                save();
+              }}
+            >
+              <h2 id="sheet-title" className="sheet-editing-label">
+                Edit project
+              </h2>
+              <label className="sheet-field">
+                Name
+                <input
+                  value={draft.name}
+                  onChange={(event) =>
+                    setDraft((current) => ({ ...current, name: event.target.value }))
+                  }
+                  autoFocus
+                />
+              </label>
+              <label className="sheet-field">
+                Client
+                <input
+                  value={draft.client}
+                  onChange={(event) =>
+                    setDraft((current) => ({ ...current, client: event.target.value }))
+                  }
+                />
+              </label>
+              <label className="sheet-field">
+                Owner
+                <input
+                  value={draft.owner}
+                  onChange={(event) =>
+                    setDraft((current) => ({ ...current, owner: event.target.value }))
+                  }
+                />
+              </label>
+              <label className="sheet-field">
+                Due
+                <input
+                  type="date"
+                  value={draft.due}
+                  onChange={(event) =>
+                    setDraft((current) => ({ ...current, due: event.target.value }))
+                  }
+                />
+              </label>
+              {error ? <p className="sheet-error">{error}</p> : null}
+              <footer className="sheet-footer">
+                <button type="button" className="sheet-close" onClick={cancelEdit}>
+                  Cancel
+                </button>
+                <button type="submit" className="add-project">
+                  Save
+                </button>
+              </footer>
+            </form>
+          )}
+        </div>
       </aside>
     </>
   );

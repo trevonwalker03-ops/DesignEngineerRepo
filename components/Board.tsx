@@ -23,6 +23,8 @@ export function Board({
 }) {
   const [overStage, setOverStage] = useState<Stage | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [sheetMode, setSheetMode] = useState<"view" | "edit">("view");
+  const [sheetRequest, setSheetRequest] = useState(0);
   const dragged = useRef(false);
   const selected = jobs.find((job) => job.id === selectedId) ?? null;
   const closeSheet = useCallback(() => setSelectedId(null), []);
@@ -39,12 +41,20 @@ export function Board({
     event.dataTransfer.effectAllowed = "move";
   }
 
-  function openProject(id: string) {
+  function openProject(id: string, mode: "view" | "edit" = "view") {
     if (dragged.current) {
       dragged.current = false;
       return;
     }
+    setSheetMode(mode);
+    setSheetRequest((current) => current + 1);
     setSelectedId(id);
+  }
+
+  function saveProject(project: Project) {
+    setJobs((current) =>
+      current.map((job) => (job.id === project.id ? project : job)),
+    );
   }
 
   function onDragOver(event: React.DragEvent<HTMLElement>, stage: Stage) {
@@ -106,17 +116,32 @@ export function Board({
                       <article
                         className="card"
                         draggable
-                        role="button"
                         tabIndex={0}
                         onDragStart={(event) => onDragStart(event, job.id)}
                         onClick={() => openProject(job.id)}
                         onKeyDown={(event) => {
                           if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
-                            setSelectedId(job.id);
+                            openProject(job.id);
                           }
                         }}
                       >
+                        <button
+                          type="button"
+                          className="card-edit"
+                          aria-label={`Edit ${job.name}`}
+                          onMouseDown={(event) => event.stopPropagation()}
+                          onDragStart={(event) => event.stopPropagation()}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            openProject(job.id, "edit");
+                          }}
+                        >
+                          <svg viewBox="0 0 16 16" aria-hidden="true">
+                            <path d="M11.2 1.8a1.2 1.2 0 0 1 1.7 0l1.3 1.3a1.2 1.2 0 0 1 0 1.7L6.4 12.6 3 13.4l.8-3.4 7.4-8.2Z" />
+                            <path d="M2 14.2h12" />
+                          </svg>
+                        </button>
                         <h3>{job.name}</h3>
                         <p className="client">{job.client}</p>
                         <p className="meta">
@@ -133,7 +158,14 @@ export function Board({
         })}
       </div>
       {selected ? (
-        <ProjectSheet project={selected} onClose={closeSheet} />
+        <ProjectSheet
+          key={selected.id}
+          project={selected}
+          initialMode={sheetMode}
+          openRequest={sheetRequest}
+          onClose={closeSheet}
+          onSave={saveProject}
+        />
       ) : null}
     </>
   );
