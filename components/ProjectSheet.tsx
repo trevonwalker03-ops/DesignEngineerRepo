@@ -11,12 +11,14 @@ export function ProjectSheet({
   openRequest,
   onClose,
   onSave,
+  onDelete,
 }: {
   project: Project;
   initialMode: Mode;
   openRequest: number;
   onClose: () => void;
   onSave: (project: Project) => void;
+  onDelete: (id: string) => void;
 }) {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [closing, setClosing] = useState(false);
@@ -112,9 +114,6 @@ export function ProjectSheet({
             <>
               <div className="sheet-title-row">
                 <h2 id="sheet-title">{project.name}</h2>
-                <button type="button" className="sheet-edit" onClick={() => setMode("edit")}>
-                  Edit
-                </button>
               </div>
               <dl className="sheet-details">
                 <div>
@@ -132,6 +131,18 @@ export function ProjectSheet({
                   </dd>
                 </div>
               </dl>
+              <footer className="sheet-actions">
+                <button
+                  type="button"
+                  className="sheet-delete"
+                  onClick={() => onDelete(project.id)}
+                >
+                  Delete
+                </button>
+                <button type="button" className="sheet-edit" onClick={() => setMode("edit")}>
+                  Edit
+                </button>
+              </footer>
             </>
           ) : (
             <form

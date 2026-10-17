@@ -9,6 +9,8 @@
   --progress: #1f4d3a;
   --review: #6e3144;
   --shipped: #3d4c5c;
+  --delete: #8f2d2a;
+  --delete-hover: #a63834;
   --font-sans: "IBM Plex Sans", sans-serif;
   --font-display: "Newsreader", serif;
 }
@@ -95,6 +97,23 @@ body {
 .add-project:hover,
 .modal-submit:hover {
   background: #3a332c;
+}
+
+.modal-delete {
+  padding: 0.45rem 0.8rem;
+  border: none;
+  background: var(--delete);
+  color: var(--card);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.delete-copy {
+  margin-top: 0.75rem;
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 
 .add-project:focus-visible,
@@ -206,7 +225,7 @@ body {
 
 .card {
   position: relative;
-  padding: 0.8rem 2.4rem 0.75rem 0.85rem;
+  padding: 0.8rem 4.4rem 0.75rem 0.85rem;
   background: var(--card);
   border: 1px solid var(--line);
   cursor: pointer;
@@ -233,10 +252,16 @@ body {
   cursor: grabbing;
 }
 
-.card-edit {
+.card-actions {
   position: absolute;
   top: 0.45rem;
-  right: 0.45rem;
+  right: 0.4rem;
+  display: flex;
+  gap: 0.1rem;
+}
+
+.card-edit,
+.card-delete {
   display: grid;
   width: 1.7rem;
   height: 1.7rem;
@@ -248,7 +273,8 @@ body {
   cursor: pointer;
 }
 
-.card-edit svg {
+.card-edit svg,
+.card-delete svg {
   width: 0.9rem;
   height: 0.9rem;
   fill: none;
@@ -263,6 +289,19 @@ body {
   border-color: var(--line);
   background: var(--paper);
   color: var(--ink);
+}
+
+
+
+.card-delete {
+  color: var(--delete);
+}
+
+.card-delete:hover,
+.card-delete:focus-visible {
+  border-color: var(--delete-hover);
+  background: var(--paper);
+  color: var(--delete);
 }
 
 .column.is-over {
@@ -366,7 +405,6 @@ body {
 }
 
 .sheet-edit {
-  margin-top: 1.35rem;
   padding: 0.35rem 0.7rem;
   border: 1px solid var(--line);
   background: transparent;
@@ -412,6 +450,27 @@ body {
   margin-top: 0.85rem;
   color: var(--review);
   font-size: 0.88rem;
+}
+
+.sheet-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  margin-top: auto;
+  padding-top: 1.25rem;
+}
+
+.sheet-delete {
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--delete);
+  background: var(--card);
+  color: var(--delete);
+  font-family: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.sheet-delete:hover {
+  border-color: var(--ink);
 }
 
 .sheet-footer {
